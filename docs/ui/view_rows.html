@@ -1,92 +1,73 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>Test SPL.js | Samples via Parquet</title>
+<title>View rows of combined sources | Samples via Parquet</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&amp;display=swap" crossorigin>
 <link rel="preload" as="style" href="./_observablehq/theme-air,near-midnight.css">
 <link rel="preload" as="style" href="./_observablehq/stdlib/inputs.css">
-<link rel="preload" as="style" href="./_npm/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&amp;display=swap" crossorigin>
 <link rel="stylesheet" type="text/css" href="./_observablehq/theme-air,near-midnight.css">
 <link rel="stylesheet" type="text/css" href="./_observablehq/stdlib/inputs.css">
-<link rel="stylesheet" type="text/css" href="./_npm/leaflet@1.9.4/dist/leaflet.css">
 <link rel="modulepreload" href="./_observablehq/client.js">
 <link rel="modulepreload" href="./_observablehq/runtime.js">
 <link rel="modulepreload" href="./_observablehq/stdlib.js">
-<link rel="modulepreload" href="./_npm/spl.js@0.1.1/_esm.js">
+<link rel="modulepreload" href="./_import/sources.0418f8aa.js">
+<link rel="modulepreload" href="./_observablehq/stdlib/duckdb.js">
 <link rel="modulepreload" href="./_observablehq/stdlib/inputs.js">
-<link rel="modulepreload" href="./_npm/leaflet@1.9.4/_esm.js">
+<link rel="modulepreload" href="./_npm/@duckdb/duckdb-wasm@1.28.0/_esm.js">
 <link rel="modulepreload" href="./_npm/htl@0.3.1/_esm.js">
 <link rel="modulepreload" href="./_npm/isoformat@0.2.1/_esm.js">
+<link rel="modulepreload" href="./_npm/apache-arrow@15.0.2/_esm.js">
+<link rel="modulepreload" href="./_npm/tslib@2.6.2/_esm.js">
+<link rel="modulepreload" href="./_npm/flatbuffers@23.5.26/_esm.js">
 <script type="module">
 
 import {define} from "./_observablehq/client.js";
 
-define({id: "12eae37d", outputs: ["SPL"], body: async () => {
-const {default: SPL} = await import("./_npm/spl.js@0.1.1/_esm.js");
+define({id: "ff0f5809", outputs: ["sources","ssources","source_list"], body: async () => {
+const {sources, ssources, source_list} = await import("./_import/sources.0418f8aa.js");
 
-return {SPL};
+return {sources,ssources,source_list};
 }});
 
-define({id: "267f1a85", inputs: ["SPL"], outputs: ["spatialite_db","countries","db","version"], body: async (SPL) => {
-const spatialite_db = "https://bertt.github.io/spatialite_sample/countries.sqlite";
-const countries = await fetch(spatialite_db)
-    .then(response => response.arrayBuffer());
-
-const db = await SPL().then(spl => spl.db(countries));
-
-const version = await db.exec('SELECT spatialite_version()').get.first;
-return {spatialite_db,countries,db,version};
-}});
-
-define({id: "5ca4f385", inline: true, inputs: ["version","display"], body: async (version,display) => {
+define({id: "5018f409", inline: true, inputs: ["sources","display"], body: async (sources,display) => {
 display(await(
-version
+sources.join("\n")
 ))
 }});
 
-define({id: "6bce3652", inputs: ["db"], outputs: ["countries_columns"], body: async (db) => {
-const countries_columns = await db.exec('pragma table_info(countries);').get.objs;
-return {countries_columns};
-}});
-
-define({id: "32801772", inline: true, inputs: ["Inputs","countries_columns","display"], body: async (Inputs,countries_columns,display) => {
-display(await(
-Inputs.table(countries_columns)
-))
-}});
-
-define({id: "5b566bb2", inputs: ["display","L","db"], outputs: ["toFeature","container","map","defaultStyle","geometries"], body: async (display,L,db) => {
-function toFeature(feature){
-  let f= {"type": "Feature"}
-  f.geometry = feature.geometry
-  return f
+define({id: "b57e737c", inputs: ["DuckDBClient","source_list","Inputs"], outputs: ["getSourceCounts","columnNames","count_table"], body: (DuckDBClient,source_list,Inputs) => {
+async function getSourceCounts() {
+    const db = await DuckDBClient.of();
+    const q = `SELECT source, COUNT(*) as n FROM read_parquet([${source_list}]) GROUP BY source`;
+    return db.query(q);
 }
 
-const container = display(document.createElement('div'));
-container.style = "height: 600px;";
+function columnNames(v) {
+    const mapping = {
+        "GEOME":"GEOME",
+        "SMITHSONIAN":"Smithsonian",
+        "OPENCONTEXT": "OpenContext",
+        "SESAR": "SESAR"
+    }
+    return mapping[v];
+}
 
-const map = L.map(container).setView([0, 0], 2);
+const count_table = Inputs.table(
+    getSourceCounts(), 
+    {
+        "format":{
+            "source":columnNames
+        },
+        "maxWidth": 300
+    }
+);
+return {getSourceCounts,columnNames,count_table};
+}});
 
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: "&copy; <a href=https://www.openstreetmap.org/copyright>OpenStreetMap</a> contributors"
-}).addTo(map);
-
-const defaultStyle = { 
-    color: 'blue', 
-    weight: 2, 
-    fillOpacity: 0.1,
-};
-
-const geometries = await db.exec('select name, geometry as geometry from countries where geometry is not null').get.objs
-
-geometries.forEach(geometry => 
-{
-    const f = toFeature(geometry)
-    L.geoJSON(f, {style: defaultStyle}).addTo(map).bindPopup("name: " + geometry.name);
-});
-return {toFeature,container,map,defaultStyle,geometries};
+define({id: "75fa4b89", inline: true, inputs: ["view","count_table"], body: (view,count_table) => {
+view(count_table)
 }});
 
 </script>
@@ -114,15 +95,15 @@ return {toFeature,container,map,defaultStyle,geometries};
 </aside>
 <div id="observablehq-center">
 <main id="observablehq-main" class="observablehq">
-<h1 id="this-is-a-test-of-spatial-lite-via-spl.js" tabindex="-1"><a class="observablehq-header-anchor" href="#this-is-a-test-of-spatial-lite-via-spl.js">This is a test of spatial lite via spl.js</a></h1>
-<div id="cell-12eae37d" class="observablehq observablehq--block"></div>
-<div id="cell-267f1a85" class="observablehq observablehq--block"></div>
-<p><span id="cell-5ca4f385"><span class="observablehq-loading"></span></span></p>
-<div id="cell-6bce3652" class="observablehq observablehq--block"></div>
-<p><span id="cell-32801772"><span class="observablehq-loading"></span></span></p>
-<div id="cell-5b566bb2" class="observablehq observablehq--block"></div>
+<p>Example of reading rows from the parquet sources and displaying as a table.</p>
+<div id="cell-ff0f5809" class="observablehq observablehq--block"></div>
+<p>Sources:</p>
+<pre><span id="cell-5018f409"><span class="observablehq-loading"></span></span>
+</pre>
+<div id="cell-b57e737c" class="observablehq observablehq--block"></div>
+<p><span id="cell-75fa4b89"><span class="observablehq-loading"></span></span></p>
 </main>
 <footer id="observablehq-footer">
-<div>Built with <a href="https://observablehq.com/" target="_blank" rel="noopener noreferrer">Observable</a> on <a title="2024-05-31T05:08:26">May 31, 2024</a>.</div>
+<div>Built with <a href="https://observablehq.com/" target="_blank" rel="noopener noreferrer">Observable</a> on <a title="2024-05-31T05:24:12">May 31, 2024</a>.</div>
 </footer>
 </div>

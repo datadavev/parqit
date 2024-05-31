@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>Using file attachments. | Samples via Parquet</title>
+<title>Sample Remote Parquet | Samples via Parquet</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&amp;display=swap" crossorigin>
 <link rel="preload" as="style" href="./_observablehq/theme-air,near-midnight.css">
@@ -12,60 +12,69 @@
 <link rel="modulepreload" href="./_observablehq/client.js">
 <link rel="modulepreload" href="./_observablehq/runtime.js">
 <link rel="modulepreload" href="./_observablehq/stdlib.js">
-<link rel="modulepreload" href="./_npm/apache-arrow@15.0.2/_esm.js">
-<link rel="modulepreload" href="./_npm/parquet-wasm@0.6.0/_esm.js">
 <link rel="modulepreload" href="./_observablehq/stdlib/duckdb.js">
 <link rel="modulepreload" href="./_observablehq/stdlib/inputs.js">
 <link rel="modulepreload" href="./_npm/@duckdb/duckdb-wasm@1.28.0/_esm.js">
 <link rel="modulepreload" href="./_npm/htl@0.3.1/_esm.js">
 <link rel="modulepreload" href="./_npm/isoformat@0.2.1/_esm.js">
+<link rel="modulepreload" href="./_npm/apache-arrow@15.0.2/_esm.js">
 <link rel="modulepreload" href="./_npm/tslib@2.6.2/_esm.js">
 <link rel="modulepreload" href="./_npm/flatbuffers@23.5.26/_esm.js">
 <script type="module">
 
 import {define} from "./_observablehq/client.js";
-import {registerFile} from "./_observablehq/stdlib.js";
 
-registerFile("./data/bundle/samples.parquet", {"name":"./data/bundle/samples.parquet","path":"./data/bundle/samples.parquet"});
+define({id: "6d73a92b", outputs: ["remote_sources","local_sources","sources"], body: () => {
+const remote_sources = [
+  "https://datadavev.github.io/parqit/geome.parquet",
+  "https://datadavev.github.io/parqit/smithsonian.parquet",
+  "https://datadavev.github.io/parqit/opencontext.parquet",
+  "https://jelly.beehivebeach.com/data/sesar.parquet"
+];
 
-define({id: "366d9018", inputs: ["FileAttachment","DuckDBClient"], outputs: ["fa","client","n"], body: async (FileAttachment,DuckDBClient) => {
-const fa = await FileAttachment("./data/bundle/samples.parquet"); 
-const client = await DuckDBClient.of({
-    samples: fa
-});
+const local_sources = [
+  "data/geome.parquet",
+  "data/smithsonian.parquet",
+  "data/opencontext.parquet",
+  "data/sesar.parquet"
+]
 
-const n = await client.query("SELECT COUNT(*) AS n FROM samples;")
-return {fa,client,n};
+const sources = remote_sources;
+return {remote_sources,local_sources,sources};
 }});
 
-define({id: "1b16b1df", inline: true, inputs: ["n","display"], body: async (n,display) => {
+define({id: "4a32e57a", inputs: ["sources","Inputs","DuckDBClient"], outputs: ["sources_data","sd","sources_str","db"], body: async (sources,Inputs,DuckDBClient) => {
+const sources_data = [];
+for (const source of sources) {
+  sources_data.push({"Source":source});
+}
+const sd = Inputs.table(sources_data);
+
+const sources_str = `read_parquet(['${sources.join("','")}'])`;
+const db = await DuckDBClient.of();
+return {sources_data,sd,sources_str,db};
+}});
+
+define({id: "03042cf8", inline: true, inputs: ["sd","display"], body: async (sd,display) => {
 display(await(
-n
+sd
 ))
 }});
 
-define({id: "5e85c949", inline: true, inputs: ["fa","display"], body: async (fa,display) => {
-display(await(
-fa.href
-))
+define({id: "958d67b3", inputs: ["display","Inputs","sql","sources"], body: async (display,Inputs,sql,sources) => {
+display(Inputs.table(await sql`SELECT DISTINCT name FROM parquet_schema([${sources[2]},${sources[1]},${sources[0]},${sources[3]}])`));
 }});
 
-define({id: "ee24f77b", inputs: ["client","fa"], outputs: ["res2"], body: (client,fa) => {
-let res2 = client.query(`WITH mcrows AS (
-  SELECT DISTINCT unnest(hasMaterialCategory) AS mc 
-  FROM read_parquet('${fa.href}')
-) SELECT count(*) AS n, source, mcrows.mc 
-FROM read_parquet('${fa.href}')
-JOIN mcrows ON list_contains(hasMaterialCategory, mcrows.mc)
-GROUP BY source, mcrows.mc
-ORDER BY mcrows.mc ASC`);
-return {res2};
+define({id: "49bdd4f7", inputs: ["display","Inputs","sql","sources"], body: async (display,Inputs,sql,sources) => {
+display(Inputs.table(await sql`SELECT source, COUNT(*) as n FROM read_parquet([${sources[2]},${sources[1]},${sources[0]},${sources[3]}]) GROUP BY source;`));
 }});
 
-define({id: "dc6752e4", inline: true, inputs: ["Inputs","res2","display"], body: async (Inputs,res2,display) => {
-display(await(
-Inputs.table(res2)
-))
+define({id: "44e2077a", inputs: ["display","Inputs","sql","sources"], body: async (display,Inputs,sql,sources) => {
+display(Inputs.table(await sql`SELECT DISTINCT hasMaterialCategory FROM read_parquet([${sources[2]},${sources[1]},${sources[0]},${sources[3]}]);`));
+}});
+
+define({id: "d41e2059", inputs: ["display","Inputs","sql","sources"], body: async (display,Inputs,sql,sources) => {
+display(Inputs.table(await sql`SELECT id, source, label FROM read_parquet([${sources[0]},${sources[1]},${sources[2]},${sources[3]}]) WHERE list_contains(hasMaterialCategory, 'Organic material') USING SAMPLE 10%`));
 }});
 
 </script>
@@ -93,14 +102,27 @@ Inputs.table(res2)
 </aside>
 <div id="observablehq-center">
 <main id="observablehq-main" class="observablehq">
-<p>Single file attachment.</p>
-<div id="cell-366d9018" class="observablehq observablehq--block"></div>
-<p>Count = <span id="cell-1b16b1df"><span class="observablehq-loading"></span></span></p>
-<p>FA = <span id="cell-5e85c949"><span class="observablehq-loading"></span></span></p>
-<div id="cell-ee24f77b" class="observablehq observablehq--block"></div>
-<p><span id="cell-dc6752e4"><span class="observablehq-loading"></span></span></p>
+<div id="cell-6d73a92b" class="observablehq observablehq--block"></div>
+<p>This example queries iSamples parquet sources from the following locations:</p>
+<div id="cell-4a32e57a" class="observablehq observablehq--block"></div>
+<p><span id="cell-03042cf8"><span class="observablehq-loading"></span></span></p>
+<p>Those parquet source files can be examined using the DuckDB <code>parquet_schema()</code> method to determine the available fields:</p>
+<pre><code>SELECT DISTINCT name FROM parquet_schema([${sources[2]},${sources[1]},${sources[0]},${sources[3]}])
+</code></pre>
+<div id="cell-958d67b3" class="observablehq observablehq--block"></div>
+<p>Those sources have the following total number of records (grouped by source):</p>
+<div id="cell-49bdd4f7" class="observablehq observablehq--block"></div>
+<p>We can issue arbitrary SQL quaeries against the virtual table represented by the combined parquet files. For efficiency, table scan queries need to be avoided since those types of operations require retrieval of the entire remote dataset.</p>
+<p>Distinct values of <code>hasMaterialCategory</code>:</p>
+<div id="cell-44e2077a" class="observablehq observablehq--block"></div>
+<p>Random 10% subsample of all records with <code>hasMaterialCategory = 'Organic material'</code>:</p>
+<pre><code>SELECT id, source, label FROM read_parquet(...) 
+WHERE list_contains(hasMaterialCategory, 'Organic material') 
+USING SAMPLE 10%
+</code></pre>
+<div id="cell-d41e2059" class="observablehq observablehq--block"></div>
 </main>
 <footer id="observablehq-footer">
-<div>Built with <a href="https://observablehq.com/" target="_blank" rel="noopener noreferrer">Observable</a> on <a title="2024-05-31T05:08:26">May 31, 2024</a>.</div>
+<div>Built with <a href="https://observablehq.com/" target="_blank" rel="noopener noreferrer">Observable</a> on <a title="2024-05-31T05:24:12">May 31, 2024</a>.</div>
 </footer>
 </div>
