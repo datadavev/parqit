@@ -26,7 +26,7 @@
 import {define} from "./_observablehq/client.js";
 import {registerFile} from "./_observablehq/stdlib.js";
 
-registerFile("./data/bundle/samples.parquet", {"name":"./data/bundle/samples.parquet","path":"./_file/data/bundle/samples.625b97f2.parquet","lastModified":1714656389599});
+registerFile("./data/bundle/samples.parquet", {"name":"./data/bundle/samples.parquet","path":"./data/bundle/samples.parquet"});
 
 define({id: "366d9018", inputs: ["FileAttachment","DuckDBClient"], outputs: ["fa","client","n"], body: async (FileAttachment,DuckDBClient) => {
 const fa = await FileAttachment("./data/bundle/samples.parquet"); 
@@ -78,18 +78,16 @@ Inputs.table(res2)
   </ol>
   <div id="observablehq-search"><input type="search" placeholder="Search"></div>
   <div id="observablehq-search-results"></div>
-  <script>{const o=document.querySelector("#observablehq-search");o.setAttribute("data-shortcut",`${/Mac|iPhone/.test(navigator.platform)?"\u2318":"Alt-"}K`);const t=o.querySelector("input"),r=()=>import("./_observablehq/search.js");t.addEventListener("focus",r,{once:!0}),t.addEventListener("keydown",r,{once:!0});const a=document.querySelector("#observablehq-sidebar-toggle");addEventListener("keydown",e=>{(e.code==="KeyK"&&e.metaKey&&!e.altKey&&!e.ctrlKey||e.key==="/"&&!e.metaKey&&!e.altKey&&!e.ctrlKey&&e.target===document.body)&&(a.classList.add("observablehq-sidebar-open"),t.focus(),t.select(),e.preventDefault())}),t.addEventListener("blur",()=>a.classList.remove("observablehq-sidebar-open"));}</script>
-  <ol>
-    <section>
-      <summary>Example</summary>
-      <ol>
+  <script>{const o=document.querySelector("#observablehq-search");o.setAttribute("data-shortcut",`${/Mac|iPhone/.test(navigator.platform)?"\u2318":"Alt-"}K`);const t=o.querySelector("input"),r=()=>import("./_observablehq/search.js");t.addEventListener("focus",r,{once:!0}),t.addEventListener("keydown",r,{once:!0});const c=document.querySelector("#observablehq-sidebar-toggle");addEventListener("keydown",e=>{(e.code==="KeyK"&&e.metaKey&&!e.altKey&&!e.ctrlKey||e.key==="/"&&!e.metaKey&&!e.altKey&&!e.ctrlKey&&e.target===document.body)&&(c.checked?t.focus():(c.click(),t.focus(),c.click()),t.select(),e.preventDefault())});}</script>
+  <section>
+    <summary>Example</summary>
+    <ol>
     <li class="observablehq-link"><a href="./parquet_map.html">iSamples Lite</a></li>
-      </ol>
-    </section>
-  </ol>
+    </ol>
+  </section>
 </nav>
 <script>{Object.assign(document.createElement("a"),{href:""}).password&&location.replace(location.href);const e=document.querySelector("#observablehq-sidebar"),t=document.querySelector("#observablehq-sidebar-toggle"),r=sessionStorage.getItem("observablehq-sidebar");r?t.checked=r==="true":t.indeterminate=!0;for(const o of document.querySelectorAll("#observablehq-sidebar summary")){const s=o.parentElement;switch(sessionStorage.getItem(`observablehq-sidebar:${o.textContent}`)){case"true":s.open=!0;break;case"false":s.classList.contains("observablehq-section-active")||(s.open=!1);break}}addEventListener("beforeunload",()=>sessionStorage.setItem("observablehq-sidebar-scrolly",`${e.scrollTop}`));const a=sessionStorage.getItem("observablehq-sidebar-scrolly");a!=null&&(e.style.cssText="overflow: hidden;",e.scrollTop=+a,e.style.cssText="");}</script>
-<aside id="observablehq-toc" data-selector="h1:not(:first-of-type), h2:first-child, :not(h1) + h2">
+<aside id="observablehq-toc" data-selector="h1:not(:first-of-type)[id], h2:first-child[id], :not(h1) + h2[id]">
 <nav>
 </nav>
 </aside>
@@ -97,12 +95,12 @@ Inputs.table(res2)
 <main id="observablehq-main" class="observablehq">
 <p>Single file attachment.</p>
 <div id="cell-366d9018" class="observablehq observablehq--block"></div>
-<p>Count = <span id="cell-1b16b1df" class="observablehq--loading"></span></p>
-<p>FA = <span id="cell-5e85c949" class="observablehq--loading"></span></p>
+<p>Count = <span id="cell-1b16b1df"><span class="observablehq-loading"></span></span></p>
+<p>FA = <span id="cell-5e85c949"><span class="observablehq-loading"></span></span></p>
 <div id="cell-ee24f77b" class="observablehq observablehq--block"></div>
-<p><span id="cell-dc6752e4" class="observablehq--loading"></span></p>
+<p><span id="cell-dc6752e4"><span class="observablehq-loading"></span></span></p>
 </main>
 <footer id="observablehq-footer">
-<div>Built with <a href="https://observablehq.com/" target="_blank" rel="noopener noreferrer">Observable</a> on <a title="2024-05-31T04:57:09">May 31, 2024</a>.</div>
+<div>Built with <a href="https://observablehq.com/" target="_blank" rel="noopener noreferrer">Observable</a> on <a title="2024-05-31T05:08:26">May 31, 2024</a>.</div>
 </footer>
 </div>

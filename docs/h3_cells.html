@@ -226,18 +226,16 @@ visible_cells
   </ol>
   <div id="observablehq-search"><input type="search" placeholder="Search"></div>
   <div id="observablehq-search-results"></div>
-  <script>{const o=document.querySelector("#observablehq-search");o.setAttribute("data-shortcut",`${/Mac|iPhone/.test(navigator.platform)?"\u2318":"Alt-"}K`);const t=o.querySelector("input"),r=()=>import("./_observablehq/search.js");t.addEventListener("focus",r,{once:!0}),t.addEventListener("keydown",r,{once:!0});const a=document.querySelector("#observablehq-sidebar-toggle");addEventListener("keydown",e=>{(e.code==="KeyK"&&e.metaKey&&!e.altKey&&!e.ctrlKey||e.key==="/"&&!e.metaKey&&!e.altKey&&!e.ctrlKey&&e.target===document.body)&&(a.classList.add("observablehq-sidebar-open"),t.focus(),t.select(),e.preventDefault())}),t.addEventListener("blur",()=>a.classList.remove("observablehq-sidebar-open"));}</script>
-  <ol>
-    <section>
-      <summary>Example</summary>
-      <ol>
+  <script>{const o=document.querySelector("#observablehq-search");o.setAttribute("data-shortcut",`${/Mac|iPhone/.test(navigator.platform)?"\u2318":"Alt-"}K`);const t=o.querySelector("input"),r=()=>import("./_observablehq/search.js");t.addEventListener("focus",r,{once:!0}),t.addEventListener("keydown",r,{once:!0});const c=document.querySelector("#observablehq-sidebar-toggle");addEventListener("keydown",e=>{(e.code==="KeyK"&&e.metaKey&&!e.altKey&&!e.ctrlKey||e.key==="/"&&!e.metaKey&&!e.altKey&&!e.ctrlKey&&e.target===document.body)&&(c.checked?t.focus():(c.click(),t.focus(),c.click()),t.select(),e.preventDefault())});}</script>
+  <section>
+    <summary>Example</summary>
+    <ol>
     <li class="observablehq-link"><a href="./parquet_map.html">iSamples Lite</a></li>
-      </ol>
-    </section>
-  </ol>
+    </ol>
+  </section>
 </nav>
 <script>{Object.assign(document.createElement("a"),{href:""}).password&&location.replace(location.href);const e=document.querySelector("#observablehq-sidebar"),t=document.querySelector("#observablehq-sidebar-toggle"),r=sessionStorage.getItem("observablehq-sidebar");r?t.checked=r==="true":t.indeterminate=!0;for(const o of document.querySelectorAll("#observablehq-sidebar summary")){const s=o.parentElement;switch(sessionStorage.getItem(`observablehq-sidebar:${o.textContent}`)){case"true":s.open=!0;break;case"false":s.classList.contains("observablehq-section-active")||(s.open=!1);break}}addEventListener("beforeunload",()=>sessionStorage.setItem("observablehq-sidebar-scrolly",`${e.scrollTop}`));const a=sessionStorage.getItem("observablehq-sidebar-scrolly");a!=null&&(e.style.cssText="overflow: hidden;",e.scrollTop=+a,e.style.cssText="");}</script>
-<aside id="observablehq-toc" data-selector="h1:not(:first-of-type), h2:first-child, :not(h1) + h2">
+<aside id="observablehq-toc" data-selector="h1:not(:first-of-type)[id], h2:first-child[id], :not(h1) + h2[id]">
 <nav>
 </nav>
 </aside>
@@ -248,18 +246,18 @@ visible_cells
 <div id="cell-a1cc4dea" class="observablehq observablehq--block"></div>
 <p>Examine a resolution 0 cell</p>
 <div id="cell-80483531" class="observablehq observablehq--block"></div>
-<p>There are <span id="cell-01248f4f" class="observablehq--loading"></span> cells at resolution 0. The coordinates of the edge points for cell <span id="cell-62c66a7a" class="observablehq--loading"></span> in the list are:</p>
-<p><span id="cell-57f42faf" class="observablehq--loading"></span></p>
+<p>There are <span id="cell-01248f4f"><span class="observablehq-loading"></span></span> cells at resolution 0. The coordinates of the edge points for cell <span id="cell-62c66a7a"><span class="observablehq-loading"></span></span> in the list are:</p>
+<p><span id="cell-57f42faf"><span class="observablehq-loading"></span></span></p>
 <div id="cesiumContainer"></div>
 <div id="cell-60b9a6c8" class="observablehq observablehq--block"></div>
 <div id="cell-e286cac2" class="observablehq observablehq--block"></div>
 <p>Visible cells:</p>
-<div id="cell-a0c0606b" class="observablehq observablehq--block observablehq--loading"></div>
+<div id="cell-a0c0606b" class="observablehq observablehq--block"><span class="observablehq-loading"></span></div>
 <p>When rendering large data, not all the content can be retrieved and shown at once. Instead, only records that are visible should be retrieved and rendered. One approach for achieving this is to determine the set of H3 cells that are visible and use those H3 index values to retrieve corresponding records.</p>
 <p>Determining visible cells is a bit more challenging than expected. In Cesium a simple bounding box test works fine when the horizon is not visible, the anter-meridian is not traversed, and the poles are not visible. An alternative approach is to use the bounding spheres of the test objects (i.e. the H3 cells), and test if those spheres intersect with the view frustrum. Note that this will pick up enitites on the other side of the planet since those entities are within the view frustrum. Hence it is necessary to also include the planet as an occulder. So the test is basically, if the bounding sphere of the entity is within the view frustrum and not occluded by the planet, then the entity is visible.</p>
 <p>This approach works reasonably well at country to whole planet scales, but tends to fail at finer resolutions because the simple test of the bounding spehere intersection relies on testing the center point of the cell bounding sphere, which is often not in the view at the finer resolutions. An alternative may be to use the center point of the view to find a target cell and expand from there (neighbors, finer H3 resolution). This approach may be challenged at low angle view points, where the viewer focus tends to be the foreground rather than the center.</p>
 </main>
 <footer id="observablehq-footer">
-<div>Built with <a href="https://observablehq.com/" target="_blank" rel="noopener noreferrer">Observable</a> on <a title="2024-05-31T04:57:09">May 31, 2024</a>.</div>
+<div>Built with <a href="https://observablehq.com/" target="_blank" rel="noopener noreferrer">Observable</a> on <a title="2024-05-31T05:08:26">May 31, 2024</a>.</div>
 </footer>
 </div>

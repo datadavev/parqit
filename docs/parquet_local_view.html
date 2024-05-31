@@ -145,49 +145,47 @@ Inputs.table(res2)
   </ol>
   <div id="observablehq-search"><input type="search" placeholder="Search"></div>
   <div id="observablehq-search-results"></div>
-  <script>{const o=document.querySelector("#observablehq-search");o.setAttribute("data-shortcut",`${/Mac|iPhone/.test(navigator.platform)?"\u2318":"Alt-"}K`);const t=o.querySelector("input"),r=()=>import("./_observablehq/search.js");t.addEventListener("focus",r,{once:!0}),t.addEventListener("keydown",r,{once:!0});const a=document.querySelector("#observablehq-sidebar-toggle");addEventListener("keydown",e=>{(e.code==="KeyK"&&e.metaKey&&!e.altKey&&!e.ctrlKey||e.key==="/"&&!e.metaKey&&!e.altKey&&!e.ctrlKey&&e.target===document.body)&&(a.classList.add("observablehq-sidebar-open"),t.focus(),t.select(),e.preventDefault())}),t.addEventListener("blur",()=>a.classList.remove("observablehq-sidebar-open"));}</script>
-  <ol>
-    <section>
-      <summary>Example</summary>
-      <ol>
+  <script>{const o=document.querySelector("#observablehq-search");o.setAttribute("data-shortcut",`${/Mac|iPhone/.test(navigator.platform)?"\u2318":"Alt-"}K`);const t=o.querySelector("input"),r=()=>import("./_observablehq/search.js");t.addEventListener("focus",r,{once:!0}),t.addEventListener("keydown",r,{once:!0});const c=document.querySelector("#observablehq-sidebar-toggle");addEventListener("keydown",e=>{(e.code==="KeyK"&&e.metaKey&&!e.altKey&&!e.ctrlKey||e.key==="/"&&!e.metaKey&&!e.altKey&&!e.ctrlKey&&e.target===document.body)&&(c.checked?t.focus():(c.click(),t.focus(),c.click()),t.select(),e.preventDefault())});}</script>
+  <section>
+    <summary>Example</summary>
+    <ol>
     <li class="observablehq-link"><a href="./parquet_map.html">iSamples Lite</a></li>
-      </ol>
-    </section>
-  </ol>
+    </ol>
+  </section>
 </nav>
 <script>{Object.assign(document.createElement("a"),{href:""}).password&&location.replace(location.href);const e=document.querySelector("#observablehq-sidebar"),t=document.querySelector("#observablehq-sidebar-toggle"),r=sessionStorage.getItem("observablehq-sidebar");r?t.checked=r==="true":t.indeterminate=!0;for(const o of document.querySelectorAll("#observablehq-sidebar summary")){const s=o.parentElement;switch(sessionStorage.getItem(`observablehq-sidebar:${o.textContent}`)){case"true":s.open=!0;break;case"false":s.classList.contains("observablehq-section-active")||(s.open=!1);break}}addEventListener("beforeunload",()=>sessionStorage.setItem("observablehq-sidebar-scrolly",`${e.scrollTop}`));const a=sessionStorage.getItem("observablehq-sidebar-scrolly");a!=null&&(e.style.cssText="overflow: hidden;",e.scrollTop=+a,e.style.cssText="");}</script>
-<aside id="observablehq-toc" data-selector="h1:not(:first-of-type), h2:first-child, :not(h1) + h2">
+<aside id="observablehq-toc" data-selector="h1:not(:first-of-type)[id], h2:first-child[id], :not(h1) + h2[id]">
 <nav>
 </nav>
 </aside>
 <div id="observablehq-center">
 <main id="observablehq-main" class="observablehq">
 <div id="cell-8669cbd9" class="observablehq observablehq--block"></div>
-<p>Served from <span id="cell-6cd70b60" class="observablehq--loading"></span>.</p>
+<p>Served from <span id="cell-6cd70b60"><span class="observablehq-loading"></span></span>.</p>
 <p>The dev server supports a single connection which limits performance in dev mode.</p>
 <div id="cell-1478d4fc" class="observablehq observablehq--block"></div>
 <p>The data sources being used:</p>
-<p><span id="cell-94578b22" class="observablehq--loading"></span></p>
+<p><span id="cell-94578b22"><span class="observablehq-loading"></span></span></p>
 <p>Columns available:</p>
 <pre>SELECT DISTINCT name 
-FROM parquet_schema([<span id="cell-300ca29e" class="observablehq--loading"></span>,<span id="cell-7b185a66" class="observablehq--loading"></span>,<span id="cell-7238f0c3" class="observablehq--loading"></span>,<span id="cell-e2817901" class="observablehq--loading"></span>])
+FROM parquet_schema([<span id="cell-300ca29e"><span class="observablehq-loading"></span></span>,<span id="cell-7b185a66"><span class="observablehq-loading"></span></span>,<span id="cell-7238f0c3"><span class="observablehq-loading"></span></span>,<span id="cell-e2817901"><span class="observablehq-loading"></span></span>])
 </pre>
 <div id="cell-9f1f9ac4" class="observablehq observablehq--block"></div>
-<p><span id="cell-cc1cd3e2" class="observablehq--loading"></span></p>
+<p><span id="cell-cc1cd3e2"><span class="observablehq-loading"></span></span></p>
 <p>Random sample of 1% of records:</p>
 <pre>SELECT source,id,label,description 
-  FROM read_parquet(<span id="cell-d0a0e8f7" class="observablehq--loading"></span>) 
+  FROM read_parquet(<span id="cell-d0a0e8f7"><span class="observablehq-loading"></span></span>) 
   USING SAMPLE 1%
 </pre>
 <div id="cell-695910fd" class="observablehq observablehq--block"></div>
-<p><span id="cell-311c95f9" class="observablehq--loading"></span></p>
+<p><span id="cell-311c95f9"><span class="observablehq-loading"></span></span></p>
 <p>Counts of material category grouped by source. This uses a recursive CTE since the values of
 material category appear as an array for each record, so we first get a distinct list of material category
 values then query the sources for records that contain the distinct values.</p>
 <div id="cell-ea821f70" class="observablehq observablehq--block"></div>
-<p><span id="cell-dc6752e4" class="observablehq--loading"></span></p>
+<p><span id="cell-dc6752e4"><span class="observablehq-loading"></span></span></p>
 </main>
 <footer id="observablehq-footer">
-<div>Built with <a href="https://observablehq.com/" target="_blank" rel="noopener noreferrer">Observable</a> on <a title="2024-05-31T04:57:09">May 31, 2024</a>.</div>
+<div>Built with <a href="https://observablehq.com/" target="_blank" rel="noopener noreferrer">Observable</a> on <a title="2024-05-31T05:08:26">May 31, 2024</a>.</div>
 </footer>
 </div>
