@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Exploring H3 Index | Samples via Parquet</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&amp;display=swap" crossorigin>
+<link rel="preload" as="style" href="./_observablehq/theme-air,near-midnight.css">
+<link rel="preload" as="style" href="./_observablehq/stdlib/inputs.css">
+<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&amp;display=swap" crossorigin>
+<link rel="stylesheet" type="text/css" href="./_observablehq/theme-air,near-midnight.css">
+<link rel="stylesheet" type="text/css" href="./_observablehq/stdlib/inputs.css">
+<link rel="modulepreload" href="./_observablehq/client.js">
+<link rel="modulepreload" href="./_observablehq/runtime.js">
+<link rel="modulepreload" href="./_observablehq/stdlib.js">
+<link rel="modulepreload" href="https://unpkg.com/h3-js@4.1.0/dist/h3-js.es.js">
+<link rel="modulepreload" href="./_observablehq/stdlib/inputs.js">
+<link rel="modulepreload" href="./_npm/htl@0.3.1/_esm.js">
+<link rel="modulepreload" href="./_npm/isoformat@0.2.1/_esm.js">
+<script type="module">
+
+import {define} from "./_observablehq/client.js";
+
+define({id: "a1cc4dea", outputs: ["h3"], body: async () => {
+const h3 = await import("https://unpkg.com/h3-js@4.1.0/dist/h3-js.es.js");
+
+return {h3};
+}});
+
+define({id: "80483531", inputs: ["h3","view","Inputs"], outputs: ["cells0","m"], body: (h3,view,Inputs) => {
+let cells0 = h3.getRes0Cells();
+const m = view(Inputs.range([0, cells0.length-1], {label: "Cell number", step: 1}));
+return {cells0,m};
+}});
+
+define({id: "01248f4f", inline: true, inputs: ["cells0","display"], body: async (cells0,display) => {
+display(await(
+cells0.length
+))
+}});
+
+define({id: "62c66a7a", inline: true, inputs: ["m","display"], body: async (m,display) => {
+display(await(
+m
+))
+}});
+
+define({id: "57f42faf", inline: true, inputs: ["Inputs","h3","cells0","m","display"], body: async (Inputs,h3,cells0,m,display) => {
+display(await(
+Inputs.table(h3.cellToBoundary(cells0[m], false), {columns: [0,1], header: {0: "latitude", 1:"longitude"}})
+))
+}});
+
+define({id: "60b9a6c8", inputs: ["Cesium"], outputs: ["viewer"], body: async (Cesium) => {
+Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIwNzk3NjkyMy1iNGI1LTRkN2UtODRiMy04OTYwYWE0N2M3ZTkiLCJpZCI6Njk1MTcsImlhdCI6MTYzMzU0MTQ3N30.e70dpNzOCDRLDGxRguQCC-tRzGzA-23Xgno5lNgCeB4';
+
+const viewer = await new Cesium.Viewer("cesiumContainer");
+return {viewer};
+}});
+
+define({id: "e286cac2", inputs: ["h3","Cesium","viewer","Inputs"], outputs: ["getH3CellsAtResolution","getH3CellsAsGeoJSON","getH3CellsAsCesiumPolygons","getH3Points","getCellsVisible","h3_0","handleCameraEndEvent","visible_cells"], body: async (h3,Cesium,viewer,Inputs) => {
+function getH3CellsAtResolution(resolution) {
+    if (resolution === undefined) {
+        resolution = 0;
+    } else if (resolution > 3) {
+        resolution = 3;
+    }
+    let cells = h3.getRes0Cells();
+    if (resolution > 0) {
+        let cells1 = [];
+        for (const cell of cells) {
+            cells1 = cells1.concat(h3.cellToChildren(cell, resolution));
+        }
+        cells = cells1;
+    }
+    return cells
+}
+
+function getH3CellsAsGeoJSON(resolution) {
+    const cells = getH3CellsAtResolution(resolution);
+    const geoj = {
+        "type":"FeatureCollection",
+        "features": []
+    }
+    for (const cell of cells) {
+        geoj.features.push({
+            "id": cell,
+            "type":"Feature",
+            "geometry": {
+                "type":"Polygon",
+                "coordinates": [h3.cellToBoundary(cell, true)]
+            },
+            "properties":{
+                "h3":cell
+            }
+        });
+    };
+    return geoj;
+}
+
+function getH3CellsAsCesiumPolygons(feature_collection, resolution) {
+    // Populates feature_collection with global coverage of H3 Cell polygons
+    const cells = getH3CellsAtResolution(resolution);
+    for (const cell of cells) {
+        const coords = h3.celltoBoundary(cell, false);
+    }
+}
+
+
+function getH3Points(collection) {
+    const cells = h3.getRes0Cells();
+    let cells1 = [];
+    for (const cell of cells) {
+        cells1 = cells1.concat(h3.cellToChildren(cell, 1));
+    }
+    for (const cell of cells1) {
+        const ltlg = h3.cellToLatLng(cell);
+        collection.add({
+            id: cell,
+            position: Cesium.Cartesian3.fromDegrees(ltlg[1], ltlg[0], 10),
+            pixelSize: 3,
+            color: Cesium.Color.YELLOW
+        })
+    }
+}
+
+function getCellsVisible(v, entities) {
+    const frustum = v.scene.camera.frustum;
+    const cameraPosition = v.camera.position;
+    const cullingVolume = frustum.computeCullingVolume(cameraPosition, v.camera.direction, v.camera.up);
+    const occludedEllipsoid = Cesium.Ellipsoid.WGS84;
+    const occluder = new Cesium.EllipsoidalOccluder(occludedEllipsoid, cameraPosition);
+    const intersect_tests = [Cesium.Intersect.INSIDE, Cesium.Intersect.INTERSECTING];
+    //const intersect_tests = [Cesium.Intersect.INSIDE];
+    let visibles = [];
+    for (let i=0; i< entities.values.length; i++) {
+        const ent = entities.values[i];
+        if (ent.show) {
+            const bs = Cesium.BoundingSphere.fromPoints(ent.polygon.hierarchy.valueOf().positions);
+            if (bs !== undefined) {
+                if (occluder.isPointVisible(bs.center)) {
+                    if (intersect_tests.includes(cullingVolume.computeVisibility(bs))) {
+                        visibles.push(ent.id);
+                    }
+                }
+            }
+        }
+    }
+    let resolution = 1;
+    while ((visibles.length < 6) && (resolution < 3)){
+        console.log(`resolution = ${resolution} viibles = ${visibles.length}`);
+        let tmp = [];
+        for (const cell of visibles) {
+            tmp = tmp.concat(h3.cellToChildren(cell, resolution));
+        }
+        visibles = tmp;
+        resolution = resolution + 1;
+        console.log(`resolution = ${resolution} viibles = ${visibles.length}`);
+    }   
+    console.log(`resolution = ${resolution} viibles = ${visibles.length}`);
+    /*try {
+        return h3.compactCells(visibles);
+    } catch (e) {
+        console.log(e);
+    }*/
+    return visibles;
+}
+
+
+
+const h3_0 = new Cesium.GeoJsonDataSource("h3_0");
+//const h3p = new Cesium.PointPrimitiveCollection();
+//getH3Points(h3p);
+//viewer.scene.primitives.add(h3p);
+
+viewer.dataSources.add(h3_0);
+await h3_0.load(
+    getH3CellsAsGeoJSON(0),
+    {
+        "stroke": Cesium.Color.ORANGE,
+        "fill": Cesium.Color.YELLOW
+    }
+);
+
+function handleCameraEndEvent() {
+    return;
+    const dsa = viewer.dataSources.getByName("h3_0");
+    if (dsa.length === 0) {
+        return;
+    }
+}
+
+const visible_cells = Inputs.textarea({
+    label:"Cells",
+    placeholder:"",
+    value:"",
+    width:"90%"
+})
+
+viewer.camera.moveEnd.addEventListener(function() {
+    const dsa = viewer.dataSources.getByName("h3_0");
+    if (dsa.length === 0) {
+        return;
+    }
+    const visibleCells = getCellsVisible(viewer, h3_0.entities);
+    //const visibleCells = getCellsVisible(viewer, dsa[0].entities);
+    //const visibleCells = getCellsVisible(viewer, h3p);
+    console.log(visibleCells);
+    visible_cells.value = visibleCells.join(", ");
+});
+return {getH3CellsAtResolution,getH3CellsAsGeoJSON,getH3CellsAsCesiumPolygons,getH3Points,getCellsVisible,h3_0,handleCameraEndEvent,visible_cells};
+}});
+
+define({id: "a0c0606b", inputs: ["visible_cells","display"], body: async (visible_cells,display) => {
+display(await(
+visible_cells
+))
+}});
+
+</script>
+<input id="observablehq-sidebar-toggle" type="checkbox" title="Toggle sidebar">
+<label id="observablehq-sidebar-backdrop" for="observablehq-sidebar-toggle"></label>
+<nav id="observablehq-sidebar">
+  <ol>
+    <label id="observablehq-sidebar-close" for="observablehq-sidebar-toggle"></label>
+    <li class="observablehq-link"><a href="./">Samples via Parquet</a></li>
+  </ol>
+  <div id="observablehq-search"><input type="search" placeholder="Search"></div>
+  <div id="observablehq-search-results"></div>
+  <script>{const o=document.querySelector("#observablehq-search");o.setAttribute("data-shortcut",`${/Mac|iPhone/.test(navigator.platform)?"\u2318":"Alt-"}K`);const t=o.querySelector("input"),r=()=>import("./_observablehq/search.js");t.addEventListener("focus",r,{once:!0}),t.addEventListener("keydown",r,{once:!0});const a=document.querySelector("#observablehq-sidebar-toggle");addEventListener("keydown",e=>{(e.code==="KeyK"&&e.metaKey&&!e.altKey&&!e.ctrlKey||e.key==="/"&&!e.metaKey&&!e.altKey&&!e.ctrlKey&&e.target===document.body)&&(a.classList.add("observablehq-sidebar-open"),t.focus(),t.select(),e.preventDefault())}),t.addEventListener("blur",()=>a.classList.remove("observablehq-sidebar-open"));}</script>
+  <ol>
+    <section>
+      <summary>Example</summary>
+      <ol>
+    <li class="observablehq-link"><a href="./parquet_map.html">iSamples Lite</a></li>
+      </ol>
+    </section>
+  </ol>
+</nav>
+<script>{Object.assign(document.createElement("a"),{href:""}).password&&location.replace(location.href);const e=document.querySelector("#observablehq-sidebar"),t=document.querySelector("#observablehq-sidebar-toggle"),r=sessionStorage.getItem("observablehq-sidebar");r?t.checked=r==="true":t.indeterminate=!0;for(const o of document.querySelectorAll("#observablehq-sidebar summary")){const s=o.parentElement;switch(sessionStorage.getItem(`observablehq-sidebar:${o.textContent}`)){case"true":s.open=!0;break;case"false":s.classList.contains("observablehq-section-active")||(s.open=!1);break}}addEventListener("beforeunload",()=>sessionStorage.setItem("observablehq-sidebar-scrolly",`${e.scrollTop}`));const a=sessionStorage.getItem("observablehq-sidebar-scrolly");a!=null&&(e.style.cssText="overflow: hidden;",e.scrollTop=+a,e.style.cssText="");}</script>
+<aside id="observablehq-toc" data-selector="h1:not(:first-of-type), h2:first-child, :not(h1) + h2">
+<nav>
+</nav>
+</aside>
+<div id="observablehq-center">
+<main id="observablehq-main" class="observablehq">
+<script src="https://cesium.com/downloads/cesiumjs/releases/1.105.1/Build/Cesium/Cesium.js"></script>
+<link href="https://cesium.com/downloads/cesiumjs/releases/1.105.1/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+<div id="cell-a1cc4dea" class="observablehq observablehq--block"></div>
+<p>Examine a resolution 0 cell</p>
+<div id="cell-80483531" class="observablehq observablehq--block"></div>
+<p>There are <span id="cell-01248f4f" class="observablehq--loading"></span> cells at resolution 0. The coordinates of the edge points for cell <span id="cell-62c66a7a" class="observablehq--loading"></span> in the list are:</p>
+<p><span id="cell-57f42faf" class="observablehq--loading"></span></p>
+<div id="cesiumContainer"></div>
+<div id="cell-60b9a6c8" class="observablehq observablehq--block"></div>
+<div id="cell-e286cac2" class="observablehq observablehq--block"></div>
+<p>Visible cells:</p>
+<div id="cell-a0c0606b" class="observablehq observablehq--block observablehq--loading"></div>
+<p>When rendering large data, not all the content can be retrieved and shown at once. Instead, only records that are visible should be retrieved and rendered. One approach for achieving this is to determine the set of H3 cells that are visible and use those H3 index values to retrieve corresponding records.</p>
+<p>Determining visible cells is a bit more challenging than expected. In Cesium a simple bounding box test works fine when the horizon is not visible, the anter-meridian is not traversed, and the poles are not visible. An alternative approach is to use the bounding spheres of the test objects (i.e. the H3 cells), and test if those spheres intersect with the view frustrum. Note that this will pick up enitites on the other side of the planet since those entities are within the view frustrum. Hence it is necessary to also include the planet as an occulder. So the test is basically, if the bounding sphere of the entity is within the view frustrum and not occluded by the planet, then the entity is visible.</p>
+<p>This approach works reasonably well at country to whole planet scales, but tends to fail at finer resolutions because the simple test of the bounding spehere intersection relies on testing the center point of the cell bounding sphere, which is often not in the view at the finer resolutions. An alternative may be to use the center point of the view to find a target cell and expand from there (neighbors, finer H3 resolution). This approach may be challenged at low angle view points, where the viewer focus tends to be the foreground rather than the center.</p>
+</main>
+<footer id="observablehq-footer">
+<div>Built with <a href="https://observablehq.com/" target="_blank" rel="noopener noreferrer">Observable</a> on <a title="2024-05-31T04:57:09">May 31, 2024</a>.</div>
+</footer>
+</div>

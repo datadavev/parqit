@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Material Category Facet | Samples via Parquet</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&amp;display=swap" crossorigin>
+<link rel="preload" as="style" href="./_observablehq/theme-air,near-midnight.css">
+<link rel="preload" as="style" href="./_observablehq/stdlib/inputs.css">
+<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&amp;display=swap" crossorigin>
+<link rel="stylesheet" type="text/css" href="./_observablehq/theme-air,near-midnight.css">
+<link rel="stylesheet" type="text/css" href="./_observablehq/stdlib/inputs.css">
+<link rel="modulepreload" href="./_observablehq/client.js">
+<link rel="modulepreload" href="./_observablehq/runtime.js">
+<link rel="modulepreload" href="./_observablehq/stdlib.js">
+<link rel="modulepreload" href="./_import/sources.0418f8aa.js">
+<link rel="modulepreload" href="./_observablehq/stdlib/duckdb.js">
+<link rel="modulepreload" href="./_observablehq/stdlib/inputs.js">
+<link rel="modulepreload" href="./_npm/@duckdb/duckdb-wasm@1.28.0/_esm.js">
+<link rel="modulepreload" href="./_npm/htl@0.3.1/_esm.js">
+<link rel="modulepreload" href="./_npm/isoformat@0.2.1/_esm.js">
+<link rel="modulepreload" href="./_npm/apache-arrow@15.0.2/_esm.js">
+<link rel="modulepreload" href="./_npm/tslib@2.6.2/_esm.js">
+<link rel="modulepreload" href="./_npm/flatbuffers@23.5.26/_esm.js">
+<script type="module">
+
+import {define} from "./_observablehq/client.js";
+
+define({id: "6481c4c3", outputs: ["sources","ssources","source_list"], body: async () => {
+const {sources, ssources, source_list} = await import("./_import/sources.0418f8aa.js");
+
+return {sources,ssources,source_list};
+}});
+
+define({id: "5018f409", inline: true, inputs: ["sources","display"], body: async (sources,display) => {
+display(await(
+sources.join("\n")
+))
+}});
+
+define({id: "641b0c82", inputs: ["source_list"], outputs: ["get_material_values"], body: (source_list) => {
+async function get_material_values(db, field) {
+    const rows = await db.query(`SELECT DISTINCT ${field} FROM read_parquet([${source_list}])`);
+    const result = [];
+    for (const row of rows) {
+        for (const v of row[field]) {
+            if (! result.includes(v)) {
+                result.push(v);
+            }
+        }
+    }
+    const res = [];
+    for (const v of result) {
+        const row = {};
+        row[field] = v;
+        res.push(row);
+    }
+    return res;
+}
+return {get_material_values};
+}});
+
+define({id: "f877da30", inputs: ["Inputs","DuckDBClient","get_material_values"], outputs: ["source_input","db","field","materials_table"], body: async (Inputs,DuckDBClient,get_material_values) => {
+const source_input = Inputs.text({
+    label: "Source",
+    value: null
+});
+const db = await DuckDBClient.of();
+
+const field = "hasMaterialCategory";
+const materials_table = Inputs.table(get_material_values(db, field));
+
+//const columns = db.query(`SELECT source, count(*) as n FROM read_parquet(${ssources}) WHERE list_contains(hasMaterialCategory, '${source_input.value}') GROUP BY source`);
+//const result_table = Inputs.table(columns);
+return {source_input,db,field,materials_table};
+}});
+
+define({id: "4ac55fdd", inline: true, inputs: ["view","source_input"], body: (view,source_input) => {
+view(source_input)
+}});
+
+define({id: "ed969864", inline: true, inputs: ["view","materials_table"], body: (view,materials_table) => {
+view(materials_table)
+}});
+
+</script>
+<input id="observablehq-sidebar-toggle" type="checkbox" title="Toggle sidebar">
+<label id="observablehq-sidebar-backdrop" for="observablehq-sidebar-toggle"></label>
+<nav id="observablehq-sidebar">
+  <ol>
+    <label id="observablehq-sidebar-close" for="observablehq-sidebar-toggle"></label>
+    <li class="observablehq-link"><a href="./">Samples via Parquet</a></li>
+  </ol>
+  <div id="observablehq-search"><input type="search" placeholder="Search"></div>
+  <div id="observablehq-search-results"></div>
+  <script>{const o=document.querySelector("#observablehq-search");o.setAttribute("data-shortcut",`${/Mac|iPhone/.test(navigator.platform)?"\u2318":"Alt-"}K`);const t=o.querySelector("input"),r=()=>import("./_observablehq/search.js");t.addEventListener("focus",r,{once:!0}),t.addEventListener("keydown",r,{once:!0});const a=document.querySelector("#observablehq-sidebar-toggle");addEventListener("keydown",e=>{(e.code==="KeyK"&&e.metaKey&&!e.altKey&&!e.ctrlKey||e.key==="/"&&!e.metaKey&&!e.altKey&&!e.ctrlKey&&e.target===document.body)&&(a.classList.add("observablehq-sidebar-open"),t.focus(),t.select(),e.preventDefault())}),t.addEventListener("blur",()=>a.classList.remove("observablehq-sidebar-open"));}</script>
+  <ol>
+    <section>
+      <summary>Example</summary>
+      <ol>
+    <li class="observablehq-link"><a href="./parquet_map.html">iSamples Lite</a></li>
+      </ol>
+    </section>
+  </ol>
+</nav>
+<script>{Object.assign(document.createElement("a"),{href:""}).password&&location.replace(location.href);const e=document.querySelector("#observablehq-sidebar"),t=document.querySelector("#observablehq-sidebar-toggle"),r=sessionStorage.getItem("observablehq-sidebar");r?t.checked=r==="true":t.indeterminate=!0;for(const o of document.querySelectorAll("#observablehq-sidebar summary")){const s=o.parentElement;switch(sessionStorage.getItem(`observablehq-sidebar:${o.textContent}`)){case"true":s.open=!0;break;case"false":s.classList.contains("observablehq-section-active")||(s.open=!1);break}}addEventListener("beforeunload",()=>sessionStorage.setItem("observablehq-sidebar-scrolly",`${e.scrollTop}`));const a=sessionStorage.getItem("observablehq-sidebar-scrolly");a!=null&&(e.style.cssText="overflow: hidden;",e.scrollTop=+a,e.style.cssText="");}</script>
+<aside id="observablehq-toc" data-selector="h1:not(:first-of-type), h2:first-child, :not(h1) + h2">
+<nav>
+</nav>
+</aside>
+<div id="observablehq-center">
+<main id="observablehq-main" class="observablehq">
+<div id="cell-6481c4c3" class="observablehq observablehq--block"></div>
+<p>Sources:</p>
+<pre><span id="cell-5018f409" class="observablehq--loading"></span>
+</pre>
+<div id="cell-641b0c82" class="observablehq observablehq--block"></div>
+<div id="cell-f877da30" class="observablehq observablehq--block"></div>
+<p><span id="cell-4ac55fdd" class="observablehq--loading"></span></p>
+<p><span id="cell-ed969864" class="observablehq--loading"></span></p>
+<p>Results:</p>
+</main>
+<footer id="observablehq-footer">
+<div>Built with <a href="https://observablehq.com/" target="_blank" rel="noopener noreferrer">Observable</a> on <a title="2024-05-31T04:57:09">May 31, 2024</a>.</div>
+</footer>
+</div>

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Local Samples Parquet | Samples via Parquet</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&amp;display=swap" crossorigin>
+<link rel="preload" as="style" href="./_observablehq/theme-air,near-midnight.css">
+<link rel="preload" as="style" href="./_observablehq/stdlib/inputs.css">
+<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&amp;display=swap" crossorigin>
+<link rel="stylesheet" type="text/css" href="./_observablehq/theme-air,near-midnight.css">
+<link rel="stylesheet" type="text/css" href="./_observablehq/stdlib/inputs.css">
+<link rel="modulepreload" href="./_observablehq/client.js">
+<link rel="modulepreload" href="./_observablehq/runtime.js">
+<link rel="modulepreload" href="./_observablehq/stdlib.js">
+<link rel="modulepreload" href="./_observablehq/stdlib/duckdb.js">
+<link rel="modulepreload" href="./_observablehq/stdlib/inputs.js">
+<link rel="modulepreload" href="./_npm/@duckdb/duckdb-wasm@1.28.0/_esm.js">
+<link rel="modulepreload" href="./_npm/htl@0.3.1/_esm.js">
+<link rel="modulepreload" href="./_npm/isoformat@0.2.1/_esm.js">
+<link rel="modulepreload" href="./_npm/apache-arrow@15.0.2/_esm.js">
+<link rel="modulepreload" href="./_npm/tslib@2.6.2/_esm.js">
+<link rel="modulepreload" href="./_npm/flatbuffers@23.5.26/_esm.js">
+<script type="module">
+
+import {define} from "./_observablehq/client.js";
+
+define({id: "8669cbd9", outputs: ["location","data_base"], body: () => {
+const location = new URL(window.location);
+const data_base = `${location.protocol}//${location.host}/_file`;
+return {location,data_base};
+}});
+
+define({id: "6cd70b60", inline: true, inputs: ["data_base","display"], body: async (data_base,display) => {
+display(await(
+data_base
+))
+}});
+
+define({id: "1478d4fc", inputs: ["data_base"], outputs: ["remote_sources","local_sources","sources","ssources"], body: (data_base) => {
+const remote_sources = [
+  "https://datadavev.github.io/parqit/geome.parquet",
+  "https://datadavev.github.io/parqit/smithsonian.parquet",
+  "https://datadavev.github.io/parqit/opencontext.parquet",
+  "https://jelly.beehivebeach.com/data/sesar.parquet"
+];
+
+const local_sources = [
+  data_base + "/data/geome.parquet",
+  data_base + "/data/smithsonian.parquet",
+  data_base + "/data/opencontext.parquet",
+  data_base + "/data/sesar.parquet"
+]
+
+const sources = local_sources;
+const ssources = `['${sources.join("','")}']`;
+return {remote_sources,local_sources,sources,ssources};
+}});
+
+define({id: "94578b22", inline: true, inputs: ["Inputs","sources","display"], body: async (Inputs,sources,display) => {
+display(await(
+Inputs.table(sources.reduce((res, v) => {res.push({"source":v}); return res}, []))
+))
+}});
+
+define({id: "300ca29e", inline: true, inputs: ["sources","display"], body: async (sources,display) => {
+display(await(
+sources[0]
+))
+}});
+
+define({id: "7b185a66", inline: true, inputs: ["sources","display"], body: async (sources,display) => {
+display(await(
+sources[1]
+))
+}});
+
+define({id: "7238f0c3", inline: true, inputs: ["sources","display"], body: async (sources,display) => {
+display(await(
+sources[2]
+))
+}});
+
+define({id: "e2817901", inline: true, inputs: ["sources","display"], body: async (sources,display) => {
+display(await(
+sources[3]
+))
+}});
+
+define({id: "9f1f9ac4", inputs: ["DuckDBClient","ssources"], outputs: ["db","columns"], body: async (DuckDBClient,ssources) => {
+const db = await DuckDBClient.of();
+const columns = db.query(`SELECT DISTINCT name FROM parquet_schema(${ssources}) ORDER BY name ASC`);
+return {db,columns};
+}});
+
+define({id: "cc1cd3e2", inline: true, inputs: ["Inputs","columns","display"], body: async (Inputs,columns,display) => {
+display(await(
+Inputs.table(columns)
+))
+}});
+
+define({id: "d0a0e8f7", inline: true, inputs: ["ssources","display"], body: async (ssources,display) => {
+display(await(
+ssources
+))
+}});
+
+define({id: "695910fd", inputs: ["DuckDBClient","ssources"], outputs: ["db2","res"], body: async (DuckDBClient,ssources) => {
+const db2 = await DuckDBClient.of();
+let res = db2.query(`SELECT source,id,label FROM read_parquet(${ssources}) USING SAMPLE 1%`);
+return {db2,res};
+}});
+
+define({id: "311c95f9", inline: true, inputs: ["Inputs","res","display"], body: async (Inputs,res,display) => {
+display(await(
+Inputs.table(res)
+))
+}});
+
+define({id: "ea821f70", inputs: ["DuckDBClient","ssources"], outputs: ["db3","res2"], body: async (DuckDBClient,ssources) => {
+const db3 = await DuckDBClient.of();
+let res2 = db3.query(`WITH mcrows AS (
+  SELECT DISTINCT unnest(hasMaterialCategory) AS mc 
+  FROM read_parquet(${ssources})
+) SELECT count(*) AS n, source, mcrows.mc 
+FROM read_parquet(${ssources}) 
+JOIN mcrows ON list_contains(hasMaterialCategory, mcrows.mc)
+GROUP BY source, mcrows.mc
+ORDER BY mcrows.mc ASC`);
+return {db3,res2};
+}});
+
+define({id: "dc6752e4", inline: true, inputs: ["Inputs","res2","display"], body: async (Inputs,res2,display) => {
+display(await(
+Inputs.table(res2)
+))
+}});
+
+</script>
+<input id="observablehq-sidebar-toggle" type="checkbox" title="Toggle sidebar">
+<label id="observablehq-sidebar-backdrop" for="observablehq-sidebar-toggle"></label>
+<nav id="observablehq-sidebar">
+  <ol>
+    <label id="observablehq-sidebar-close" for="observablehq-sidebar-toggle"></label>
+    <li class="observablehq-link"><a href="./">Samples via Parquet</a></li>
+  </ol>
+  <div id="observablehq-search"><input type="search" placeholder="Search"></div>
+  <div id="observablehq-search-results"></div>
+  <script>{const o=document.querySelector("#observablehq-search");o.setAttribute("data-shortcut",`${/Mac|iPhone/.test(navigator.platform)?"\u2318":"Alt-"}K`);const t=o.querySelector("input"),r=()=>import("./_observablehq/search.js");t.addEventListener("focus",r,{once:!0}),t.addEventListener("keydown",r,{once:!0});const a=document.querySelector("#observablehq-sidebar-toggle");addEventListener("keydown",e=>{(e.code==="KeyK"&&e.metaKey&&!e.altKey&&!e.ctrlKey||e.key==="/"&&!e.metaKey&&!e.altKey&&!e.ctrlKey&&e.target===document.body)&&(a.classList.add("observablehq-sidebar-open"),t.focus(),t.select(),e.preventDefault())}),t.addEventListener("blur",()=>a.classList.remove("observablehq-sidebar-open"));}</script>
+  <ol>
+    <section>
+      <summary>Example</summary>
+      <ol>
+    <li class="observablehq-link"><a href="./parquet_map.html">iSamples Lite</a></li>
+      </ol>
+    </section>
+  </ol>
+</nav>
+<script>{Object.assign(document.createElement("a"),{href:""}).password&&location.replace(location.href);const e=document.querySelector("#observablehq-sidebar"),t=document.querySelector("#observablehq-sidebar-toggle"),r=sessionStorage.getItem("observablehq-sidebar");r?t.checked=r==="true":t.indeterminate=!0;for(const o of document.querySelectorAll("#observablehq-sidebar summary")){const s=o.parentElement;switch(sessionStorage.getItem(`observablehq-sidebar:${o.textContent}`)){case"true":s.open=!0;break;case"false":s.classList.contains("observablehq-section-active")||(s.open=!1);break}}addEventListener("beforeunload",()=>sessionStorage.setItem("observablehq-sidebar-scrolly",`${e.scrollTop}`));const a=sessionStorage.getItem("observablehq-sidebar-scrolly");a!=null&&(e.style.cssText="overflow: hidden;",e.scrollTop=+a,e.style.cssText="");}</script>
+<aside id="observablehq-toc" data-selector="h1:not(:first-of-type), h2:first-child, :not(h1) + h2">
+<nav>
+</nav>
+</aside>
+<div id="observablehq-center">
+<main id="observablehq-main" class="observablehq">
+<div id="cell-8669cbd9" class="observablehq observablehq--block"></div>
+<p>Served from <span id="cell-6cd70b60" class="observablehq--loading"></span>.</p>
+<p>The dev server supports a single connection which limits performance in dev mode.</p>
+<div id="cell-1478d4fc" class="observablehq observablehq--block"></div>
+<p>The data sources being used:</p>
+<p><span id="cell-94578b22" class="observablehq--loading"></span></p>
+<p>Columns available:</p>
+<pre>SELECT DISTINCT name 
+FROM parquet_schema([<span id="cell-300ca29e" class="observablehq--loading"></span>,<span id="cell-7b185a66" class="observablehq--loading"></span>,<span id="cell-7238f0c3" class="observablehq--loading"></span>,<span id="cell-e2817901" class="observablehq--loading"></span>])
+</pre>
+<div id="cell-9f1f9ac4" class="observablehq observablehq--block"></div>
+<p><span id="cell-cc1cd3e2" class="observablehq--loading"></span></p>
+<p>Random sample of 1% of records:</p>
+<pre>SELECT source,id,label,description 
+  FROM read_parquet(<span id="cell-d0a0e8f7" class="observablehq--loading"></span>) 
+  USING SAMPLE 1%
+</pre>
+<div id="cell-695910fd" class="observablehq observablehq--block"></div>
+<p><span id="cell-311c95f9" class="observablehq--loading"></span></p>
+<p>Counts of material category grouped by source. This uses a recursive CTE since the values of
+material category appear as an array for each record, so we first get a distinct list of material category
+values then query the sources for records that contain the distinct values.</p>
+<div id="cell-ea821f70" class="observablehq observablehq--block"></div>
+<p><span id="cell-dc6752e4" class="observablehq--loading"></span></p>
+</main>
+<footer id="observablehq-footer">
+<div>Built with <a href="https://observablehq.com/" target="_blank" rel="noopener noreferrer">Observable</a> on <a title="2024-05-31T04:57:09">May 31, 2024</a>.</div>
+</footer>
+</div>
